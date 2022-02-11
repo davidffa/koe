@@ -114,8 +114,12 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
             var future = new CompletableFuture<Void>();
             channel.closeFuture().addListener(new NettyFutureWrapper<>(future));
 
-            future.thenAccept(v -> start());
+            future.thenAccept(v -> {
+                connectFuture = new CompletableFuture<>();
+                start();
+            });
         } else {
+            connectFuture = new CompletableFuture<>();
             start();
         }
 
