@@ -49,6 +49,7 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
     protected Channel channel;
     protected boolean resumable = false;
     private boolean open = false;
+    private boolean closed = false;
 
     public AbstractMediaGatewayConnection(@NotNull MediaConnectionImpl connection,
                                           @NotNull VoiceServerInfo voiceServerInfo,
@@ -137,7 +138,10 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
     protected abstract void handlePayload(JsonObject object);
 
     protected void onClose(int code, @Nullable String reason, boolean remote) {
-        connection.getDispatcher().gatewayClosed(code, reason, remote);
+        if (!closed) {
+            closed = true;
+            connection.getDispatcher().gatewayClosed(code, reason, remote);
+        }
     }
 
     @Override
@@ -183,6 +187,8 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
                     try {
                         handshaker.finishHandshake(ch, (FullHttpResponse) msg);
                         AbstractMediaGatewayConnection.this.open = true;
+                        closed = false;
+
                         connectFuture.complete(null);
 
                         if (reconnectFuture != null) {
