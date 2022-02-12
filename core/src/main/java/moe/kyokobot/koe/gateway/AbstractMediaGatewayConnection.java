@@ -89,16 +89,16 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
                 channel.writeAndFlush(new CloseWebSocketFrame(code, reason));
             }
             channel.close();
+
+            onClose(code, reason, false);
+
+            if (reconnect) {
+                reconnect();
+            }
         }
 
         if (!connectFuture.isDone()) {
             connectFuture.completeExceptionally(new NotYetConnectedException());
-        }
-
-        onClose(code, reason, false);
-
-        if (reconnect) {
-            reconnect();
         }
     }
 
