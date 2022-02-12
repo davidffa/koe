@@ -43,7 +43,6 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
     protected final Bootstrap bootstrap;
     protected final SslContext sslContext;
     protected CompletableFuture<Void> connectFuture;
-    protected CompletableFuture<Void> reconnectFuture;
 
     protected EventExecutor eventExecutor;
     protected Channel channel;
@@ -82,20 +81,16 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
     }
 
     @Override
-    public void close(int code, @Nullable String reason, boolean reconnect) {
+    public void close(int code, @Nullable String reason) {
         if (channel != null && channel.isOpen()) {
             // Code 1006 must never be sent, according to RFC 6455
             if (code != 1006) {
                 channel.writeAndFlush(new CloseWebSocketFrame(code, reason));
             }
             channel.close();
-
-            onClose(code, reason, false);
-
-            if (reconnect) {
-                reconnect();
-            }
         }
+
+        onClose(code, reason, false);
 
         if (!connectFuture.isDone()) {
             connectFuture.completeExceptionally(new NotYetConnectedException());
@@ -103,27 +98,10 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
     }
 
     @Override
-    public CompletableFuture<Void> reconnect() {
-        if (reconnectFuture != null) return reconnectFuture;
-
-        reconnectFuture = new CompletableFuture<>();
-
+    public void reconnect() {
         if (open) {
-            close(4000, "Koe: Reconnect", false);
-
-            var future = new CompletableFuture<Void>();
-            channel.closeFuture().addListener(new NettyFutureWrapper<>(future));
-
-            future.thenAccept(v -> {
-                connectFuture = new CompletableFuture<>();
-                start();
-            });
-        } else {
-            connectFuture = new CompletableFuture<>();
-            start();
+            close(4900, "Koe: Reconnect");
         }
-
-        return reconnectFuture;
     }
 
     @Override
@@ -141,6 +119,15 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
         if (!closed) {
             closed = true;
             connection.getDispatcher().gatewayClosed(code, reason, remote);
+
+            switch (code) {
+                case 1006: // Abnormal closure
+                case 4000: // Internal error
+                case 4015: // Voice server crashed
+                case 4900: // Koe: Reconnect
+                    start();
+                    break;
+            }
         }
     }
 
@@ -175,7 +162,7 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
 
         @Override
         public void channelInactive(@NotNull ChannelHandlerContext ctx) {
-            close(1006, "Abnormal closure", true);
+            close(1006, "Abnormal closure");
         }
 
         @Override
@@ -190,11 +177,6 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
                         closed = false;
 
                         connectFuture.complete(null);
-
-                        if (reconnectFuture != null) {
-                            reconnectFuture.complete(null);
-                            reconnectFuture = null;
-                        }
 
                         if (resumable) {
                             AbstractMediaGatewayConnection.this.resume();
@@ -228,10 +210,6 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
                 }
                 AbstractMediaGatewayConnection.this.open = false;
                 onClose(frame.statusCode(), frame.reasonText(), true);
-
-                if (frame.statusCode() == 4015) { // Voice server crashed
-                    reconnect();
-                }
             }
         }
 
@@ -241,7 +219,7 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
                 connectFuture.completeExceptionally(cause);
             }
 
-            close(4000, "Internal error", true);
+            close(4000, "Internal error");
             ctx.close();
         }
     }

@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class MediaConnectionImpl implements MediaConnection {
@@ -62,7 +61,7 @@ public class MediaConnectionImpl implements MediaConnection {
         stopVideoFramePolling();
 
         if (gatewayConnection != null && gatewayConnection.isOpen()) {
-            gatewayConnection.close(1000, null, false);
+            gatewayConnection.close(1000, null);
             gatewayConnection = null;
         }
 
@@ -73,12 +72,12 @@ public class MediaConnectionImpl implements MediaConnection {
     }
 
     @Override
-    public CompletableFuture<Void> reconnect() {
+    public void reconnect() {
         logger.debug("Reconnecting...");
 
-        if (gatewayConnection == null) return null;
-
-        return gatewayConnection.reconnect();
+        if (gatewayConnection != null) {
+            gatewayConnection.reconnect();
+        }
     }
 
     @Override

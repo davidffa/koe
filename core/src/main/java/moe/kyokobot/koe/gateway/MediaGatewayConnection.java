@@ -11,9 +11,9 @@ public interface MediaGatewayConnection {
 
     CompletableFuture<Void> start();
 
-    void close(int code, @Nullable String reason, boolean reconnect);
+    void close(int code, @Nullable String reason);
 
-    CompletableFuture<Void> reconnect();
+    void reconnect();
 
     void updateSpeaking(int mask);
 }

@@ -26,7 +26,7 @@ public interface MediaConnection extends Closeable {
      */
     void disconnect();
 
-    CompletableFuture<Void> reconnect();
+    void reconnect();
 
     @NotNull
     KoeClient getClient();
