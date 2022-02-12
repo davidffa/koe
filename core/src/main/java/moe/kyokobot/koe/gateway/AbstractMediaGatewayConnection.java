@@ -125,6 +125,7 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
                 case 4000: // Internal error
                 case 4015: // Voice server crashed
                 case 4900: // Koe: Reconnect
+                    connectFuture = new CompletableFuture<>();
                     start();
                     break;
             }
