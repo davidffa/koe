@@ -118,7 +118,6 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
     protected void onClose(int code, @Nullable String reason, boolean remote) {
         if (!closed) {
             closed = true;
-            connection.getDispatcher().gatewayClosed(code, reason, remote);
 
             switch (code) {
                 case 1006: // Abnormal closure
@@ -127,6 +126,9 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
                 case 4900: // Koe: Reconnect
                     connectFuture = new CompletableFuture<>();
                     start();
+                    break;
+                default:
+                    connection.getDispatcher().gatewayClosed(code, reason, remote);
                     break;
             }
         }
