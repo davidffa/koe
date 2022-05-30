@@ -47,6 +47,7 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
     protected EventExecutor eventExecutor;
     protected Channel channel;
     protected boolean resumable = false;
+    protected short reconnectAttempts = 0;
     private boolean open = false;
     private boolean closed = false;
 
@@ -119,8 +120,13 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
         if (!closed) {
             closed = true;
 
+            if (reconnectAttempts == 3) {
+                connection.getDispatcher().gatewayClosed(code, reason, remote);
+                return;
+            }
+
             switch (code) {
-                case 4006: // Session no longer valid
+                // case 4006: // Session no longer valid (Shouldn't reconnect, need new voice server update)
                 case 4009: // Session timeout
                     resumable = false;
                 case 1001: // CloudFlare WebSocket proxy restarting
@@ -128,6 +134,7 @@ public abstract class AbstractMediaGatewayConnection implements MediaGatewayConn
                 case 4000: // Internal error
                 case 4015: // Voice server crashed
                 case 4900: // Koe: Reconnect
+                    ++reconnectAttempts;
                     connectFuture = new CompletableFuture<>();
                     start();
                     break;

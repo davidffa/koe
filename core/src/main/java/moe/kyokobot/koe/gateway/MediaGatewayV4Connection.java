@@ -76,6 +76,8 @@ public class MediaGatewayV4Connection extends AbstractMediaGatewayConnection {
             case Op.READY: {
                 resumable = true;
 
+                reconnectAttempts = 0;
+
                 // Closing old UDP socket, since we're going to open a new one
                 // This condition will be true on reconnections without resume (eg. session invalid, etc)
                 if (this.connection.getConnectionHandler() != null) {
@@ -116,6 +118,8 @@ public class MediaGatewayV4Connection extends AbstractMediaGatewayConnection {
                 break;
             }
             case Op.RESUMED: {
+                reconnectAttempts = 0;
+
                 logger.debug("Resumed successfully");
                 break;
             }
