@@ -1,6 +1,7 @@
 package moe.kyokobot.koe.crypto;
 
 import io.netty.buffer.ByteBuf;
+import moe.kyokobot.koe.internal.util.AudioPacket;
 
 import java.util.List;
 
@@ -8,6 +9,8 @@ public interface EncryptionMode {
     int ZERO_BYTES_LENGTH = 32; // For XSalsa20Poly1305
 
     boolean box(ByteBuf opus, int start, ByteBuf output, byte[] secretKey);
+
+    AudioPacket open(ByteBuf packet, byte[] secretKey);
 
     String getName();
 
