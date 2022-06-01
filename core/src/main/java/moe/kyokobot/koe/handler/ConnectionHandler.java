@@ -1,6 +1,7 @@
 package moe.kyokobot.koe.handler;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.socket.DatagramChannel;
 import moe.kyokobot.koe.codec.Codec;
 import moe.kyokobot.koe.internal.json.JsonObject;
 
@@ -25,4 +26,8 @@ public interface ConnectionHandler<R> {
     CompletionStage<R> connect();
 
     void sendFrame(byte payloadType, int timestamp, ByteBuf data, int start, boolean extension);
+
+    DatagramChannel getChannel();
+
+    byte[] getSecretKey();
 }

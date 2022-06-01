@@ -6,7 +6,10 @@ import moe.kyokobot.koe.codec.CodecType;
 import moe.kyokobot.koe.codec.FramePoller;
 import moe.kyokobot.koe.codec.OpusCodec;
 import moe.kyokobot.koe.gateway.MediaGatewayConnection;
+import moe.kyokobot.koe.handler.AudioReceiveHandler;
 import moe.kyokobot.koe.handler.ConnectionHandler;
+import moe.kyokobot.koe.internal.handler.AudioReceiver;
+import moe.kyokobot.koe.internal.handler.DiscordUDPConnection;
 import moe.kyokobot.koe.media.MediaFrameProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +35,8 @@ public class MediaConnectionImpl implements MediaConnection {
     private FramePoller videoPoller;
     private MediaFrameProvider audioSender;
     private MediaFrameProvider videoSender;
+
+    private volatile AudioReceiveHandler receiveHandler;
 
     public MediaConnectionImpl(@NotNull KoeClientImpl client, long guildId) {
         this.client = Objects.requireNonNull(client);
@@ -104,6 +109,12 @@ public class MediaConnectionImpl implements MediaConnection {
         return videoSender;
     }
 
+    @Nullable
+    @Override
+    public AudioReceiveHandler getReceiveHandler() {
+        return receiveHandler;
+    }
+
     @Override
     public long getGuildId() {
         return guildId;
@@ -149,6 +160,21 @@ public class MediaConnectionImpl implements MediaConnection {
         if (wasPolling) {
             this.startAudioFramePolling();
         }
+    }
+
+    @Override
+    public void setReceiveHandler(AudioReceiveHandler receiveHandler) {
+        if (receiveHandler == null) {
+            this.receiveHandler = null;
+            this.connectionHandler.getChannel().pipeline().remove(AudioReceiver.class);
+            return;
+        }
+
+        if (this.receiveHandler == null && this.connectionHandler != null && this.connectionHandler.getChannel() != null) {
+            this.connectionHandler.getChannel().pipeline().addLast(new AudioReceiver((DiscordUDPConnection) this.connectionHandler, this));
+        }
+
+        this.receiveHandler = receiveHandler;
     }
 
     @Override
