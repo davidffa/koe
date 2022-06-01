@@ -2,13 +2,18 @@ package moe.kyokobot.koe.crypto;
 
 import io.netty.buffer.ByteBuf;
 import moe.kyokobot.koe.internal.crypto.TweetNaclFastInstanced;
+import moe.kyokobot.koe.internal.util.AudioPacket;
 
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class XSalsa20Poly1305SuffixEncryptionMode implements EncryptionMode {
     private final byte[] extendedNonce = new byte[24];
     private final byte[] m = new byte[984];
     private final byte[] c = new byte[984];
+
+    private final byte[] c2 = new byte[984];
+
     private final TweetNaclFastInstanced nacl = new TweetNaclFastInstanced();
 
     @Override
@@ -34,6 +39,29 @@ public class XSalsa20Poly1305SuffixEncryptionMode implements EncryptionMode {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public AudioPacket open(ByteBuf packet, byte[] secretKey) {
+        Arrays.fill(c2, (byte) 0);
+
+        byte flags = packet.readByte();
+        packet.readerIndex(8); // Skip unused RTP Header params
+        long ssrc = packet.readUnsignedInt();
+
+        int len = packet.readableBytes() - 24;
+        packet.readBytes(c2, 16, len);
+
+        byte[] nonce = new byte[24];
+        packet.readBytes(nonce, 0, 24);
+
+        byte[] message = new byte[len + 16];
+
+        if (0 == nacl.cryptoSecretboxXSalsa20Poly1305Open(message, c2, len + 16, nonce, secretKey)) {
+            return new AudioPacket(message, flags, ssrc);
+        }
+
+        return null;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package moe.kyokobot.koe.crypto;
 
 import io.netty.buffer.ByteBuf;
+import moe.kyokobot.koe.internal.util.AudioPacket;
 
 public class PlainEncryptionMode implements EncryptionMode {
     @Override
@@ -8,6 +9,19 @@ public class PlainEncryptionMode implements EncryptionMode {
         opus.readerIndex(start);
         output.writeBytes(opus);
         return true;
+    }
+
+    @Override
+    public AudioPacket open(ByteBuf packet, byte[] secretKey) {
+        byte flags = packet.readByte();
+        packet.readerIndex(8);
+        long ssrc = packet.readUnsignedInt();
+
+        int len = packet.readableBytes();
+        byte[] output = new byte[len];
+        packet.readBytes(output, 0, len);
+
+        return new AudioPacket(output, flags, ssrc);
     }
 
     @Override
