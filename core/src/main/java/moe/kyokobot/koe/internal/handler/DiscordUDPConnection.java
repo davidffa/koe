@@ -153,21 +153,29 @@ public class DiscordUDPConnection implements Closeable, ConnectionHandler<InetSo
         return serverAddress;
     }
 
+    public DatagramChannel getChannel() {
+        return channel;
+    }
+
     private static class Initializer extends ChannelInitializer<DatagramChannel> {
-        private final DiscordUDPConnection connection;
+        private final DiscordUDPConnection udpConnection;
         private final CompletableFuture<InetSocketAddress> future;
 
-        private Initializer(DiscordUDPConnection connection, CompletableFuture<InetSocketAddress> future) {
-            this.connection = connection;
+        private Initializer(DiscordUDPConnection udpConnection, CompletableFuture<InetSocketAddress> future) {
+            this.udpConnection = udpConnection;
             this.future = future;
         }
 
         @Override
         protected void initChannel(DatagramChannel datagramChannel) {
-            connection.channel = datagramChannel;
+            udpConnection.channel = datagramChannel;
 
-            var handler = new HolepunchHandler(future, connection.ssrc);
+            var handler = new HolepunchHandler(future, udpConnection.ssrc);
             datagramChannel.pipeline().addFirst("handler", handler);
+
+            if (udpConnection.connection.getReceiveHandler() != null) {
+                datagramChannel.pipeline().addLast(new AudioReceiver(udpConnection, udpConnection.connection));
+            }
         }
     }
 }
