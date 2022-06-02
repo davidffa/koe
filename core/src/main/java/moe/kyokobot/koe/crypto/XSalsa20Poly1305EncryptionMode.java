@@ -11,6 +11,7 @@ public class XSalsa20Poly1305EncryptionMode implements EncryptionMode {
     private final byte[] m = new byte[984];
     private final byte[] c = new byte[984];
     private final byte[] c2 = new byte[984];
+    private final byte[] openNonce = new byte[24];
     private final TweetNaclFastInstanced nacl = new TweetNaclFastInstanced();
 
     @Override
@@ -44,16 +45,14 @@ public class XSalsa20Poly1305EncryptionMode implements EncryptionMode {
         byte flags = packet.getByte(0);
         long ssrc = packet.getUnsignedInt(8);
 
-        byte[] nonce = new byte[24];
-
-        packet.readBytes(nonce, 0, 12);
+        packet.readBytes(openNonce, 0, 12);
 
         int len = packet.readableBytes();
         packet.readBytes(c2, 16, len);
 
         byte[] message = new byte[len + 16];
 
-        if (0 == nacl.cryptoSecretboxXSalsa20Poly1305Open(message, c2, len + 16, nonce, secretKey)) {
+        if (0 == nacl.cryptoSecretboxXSalsa20Poly1305Open(message, c2, len + 16, openNonce, secretKey)) {
             return new AudioPacket(message, flags, ssrc);
         }
 
