@@ -5,7 +5,6 @@ import moe.kyokobot.koe.internal.crypto.TweetNaclFastInstanced;
 import moe.kyokobot.koe.internal.util.AudioPacket;
 
 import java.util.Arrays;
-import java.util.Base64;
 
 public class XSalsa20Poly1305EncryptionMode implements EncryptionMode {
     private final byte[] extendedNonce = new byte[24];
