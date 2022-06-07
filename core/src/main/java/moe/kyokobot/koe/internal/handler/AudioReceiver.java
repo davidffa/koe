@@ -24,7 +24,6 @@ public class AudioReceiver extends SimpleChannelInboundHandler<DatagramPacket> {
     AudioPacket audio = this.udpConnection.getEncryptionMode().open(buf, this.udpConnection.getSecretKey());
 
     if (audio == null) {
-      System.out.println("Failed to decrypt the packet!");
       return;
     }
 
