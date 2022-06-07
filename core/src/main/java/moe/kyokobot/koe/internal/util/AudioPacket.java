@@ -21,7 +21,6 @@ public class AudioPacket {
 
     if (cc > 0) {
       offset += cc * 4;
-      System.out.println("CC Offset: " + offset);
     }
 
     if (hasExtension) {
