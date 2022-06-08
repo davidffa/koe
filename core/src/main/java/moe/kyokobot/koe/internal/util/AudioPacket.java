@@ -6,11 +6,13 @@ public class AudioPacket {
   private final byte[] message;
   private final byte flags;
   private final long ssrc;
+  private final long receivedTimestamp;
 
   public AudioPacket(byte[] message, byte flags, long ssrc) {
     this.message = message;
     this.flags = flags;
     this.ssrc = ssrc;
+    this.receivedTimestamp = System.currentTimeMillis();
   }
 
   public byte[] getOpusAudio() {
@@ -33,5 +35,9 @@ public class AudioPacket {
 
   public long getSsrc() {
     return ssrc;
+  }
+
+  public long getReceivedTimestamp() {
+    return receivedTimestamp;
   }
 }
