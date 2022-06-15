@@ -4,21 +4,20 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class AudioPacket {
-  private final byte[] message;
+  private ByteBuffer opus;
   private final byte flags;
   private final long ssrc;
   private final long receivedTimestamp;
-  private final boolean useDirectBuffer;
 
   public AudioPacket(byte[] message, byte flags, long ssrc, boolean useDirectBuffer) {
-    this.message = message;
     this.flags = flags;
     this.ssrc = ssrc;
     this.receivedTimestamp = System.currentTimeMillis();
-    this.useDirectBuffer = useDirectBuffer;
+
+    this.extractOpus(message, useDirectBuffer);
   }
 
-  public ByteBuffer getOpusAudio() {
+  private void extractOpus(byte[] msg, boolean useDirectBuffer) {
     int offset = 32; // crypto_secretbox_ZEROBYTES
 
     boolean hasExtension = (flags & 0b10000) != 0;
@@ -29,17 +28,23 @@ public class AudioPacket {
     }
 
     if (hasExtension) {
-      int l = (message[offset + 2] & 0xff) << 8 | (message[offset + 3] & 0xff);
+      int l = (msg[offset + 2] & 0xff) << 8 | (msg[offset + 3] & 0xff);
       offset += 4 + l * 4;
     }
 
     if (useDirectBuffer) {
-      return ByteBuffer.allocateDirect(message.length - offset)
+      opus = ByteBuffer.allocateDirect(msg.length - offset)
               .order(ByteOrder.nativeOrder())
-              .put(message, offset, message.length - offset);
+              .put(msg, offset, msg.length - offset);
+
+      return;
     }
 
-    return ByteBuffer.wrap(message, offset, message.length - offset);
+    opus = ByteBuffer.wrap(msg, offset, msg.length - offset);
+  }
+
+  public ByteBuffer getOpusAudio() {
+    return opus;
   }
 
   public long getSsrc() {
