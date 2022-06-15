@@ -59,7 +59,7 @@ public class XSalsa20Poly1305EncryptionMode implements EncryptionMode {
         packet.readBytes(c2, 16, len);
 
         if (0 == nacl.cryptoSecretboxXSalsa20Poly1305Open(m2, c2, len + 16, openNonce, secretKey)) {
-            return new AudioPacket(m2, flags, ssrc, useDirectBuffer);
+            return new AudioPacket(m2, len + 16, flags, ssrc, useDirectBuffer);
         }
 
         return null;

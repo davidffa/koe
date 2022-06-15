@@ -9,15 +9,15 @@ public class AudioPacket {
   private final long ssrc;
   private final long receivedTimestamp;
 
-  public AudioPacket(byte[] message, byte flags, long ssrc, boolean useDirectBuffer) {
+  public AudioPacket(byte[] message, int len, byte flags, long ssrc, boolean useDirectBuffer) {
     this.flags = flags;
     this.ssrc = ssrc;
     this.receivedTimestamp = System.currentTimeMillis();
 
-    this.extractOpus(message, useDirectBuffer);
+    this.extractOpus(message, len, useDirectBuffer);
   }
 
-  private void extractOpus(byte[] msg, boolean useDirectBuffer) {
+  private void extractOpus(byte[] msg, int len, boolean useDirectBuffer) {
     int offset = 32; // crypto_secretbox_ZEROBYTES
 
     boolean hasExtension = (flags & 0b10000) != 0;
@@ -35,7 +35,7 @@ public class AudioPacket {
     if (useDirectBuffer) {
       opus = ByteBuffer.allocateDirect(msg.length - offset)
               .order(ByteOrder.nativeOrder())
-              .put(msg, offset, msg.length - offset)
+              .put(msg, offset, len - offset)
               .flip();
 
       return;
