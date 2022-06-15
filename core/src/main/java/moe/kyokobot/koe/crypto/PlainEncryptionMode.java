@@ -12,7 +12,7 @@ public class PlainEncryptionMode implements EncryptionMode {
     }
 
     @Override
-    public AudioPacket open(ByteBuf packet, byte[] secretKey) {
+    public AudioPacket open(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
         byte flags = packet.readByte();
         packet.readerIndex(8);
         long ssrc = packet.readUnsignedInt();
@@ -21,7 +21,7 @@ public class PlainEncryptionMode implements EncryptionMode {
         byte[] output = new byte[len];
         packet.readBytes(output, 0, len);
 
-        return new AudioPacket(output, flags, ssrc);
+        return new AudioPacket(output, flags, ssrc, useDirectBuffer);
     }
 
     @Override

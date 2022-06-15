@@ -8,7 +8,7 @@ import java.util.List;
 public interface EncryptionMode {
     boolean box(ByteBuf opus, int start, ByteBuf output, byte[] secretKey);
 
-    AudioPacket open(ByteBuf packet, byte[] secretKey);
+    AudioPacket open(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer);
 
     String getName();
 
