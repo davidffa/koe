@@ -45,7 +45,7 @@ public class XSalsa20Poly1305LiteEncryptionMode implements EncryptionMode {
     }
 
     @Override
-    public AudioPacket open(ByteBuf packet, byte[] secretKey) {
+    public AudioPacket open(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
         Arrays.fill(c2, (byte) 0);
 
         byte flags = packet.readByte();
@@ -60,7 +60,7 @@ public class XSalsa20Poly1305LiteEncryptionMode implements EncryptionMode {
         byte[] message = new byte[len + 16];
 
         if (0 == nacl.cryptoSecretboxXSalsa20Poly1305Open(message, c2, len + 16, openNonce, secretKey)) {
-            return new AudioPacket(message, flags, ssrc);
+            return new AudioPacket(message, flags, ssrc, useDirectBuffer);
         }
 
         return null;

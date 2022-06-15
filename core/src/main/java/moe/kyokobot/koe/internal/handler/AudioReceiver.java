@@ -21,7 +21,11 @@ public class AudioReceiver extends SimpleChannelInboundHandler<DatagramPacket> {
 
     if (buf.getByte(1) != OpusCodec.PAYLOAD_TYPE) return;
 
-    AudioPacket audio = this.udpConnection.getEncryptionMode().open(buf, this.udpConnection.getSecretKey());
+    AudioPacket audio = this.udpConnection.getEncryptionMode().open(
+            buf,
+            this.udpConnection.getSecretKey(),
+            this.connection.getReceiveHandler().useDirectBuffer()
+    );
 
     if (audio == null) {
       return;
