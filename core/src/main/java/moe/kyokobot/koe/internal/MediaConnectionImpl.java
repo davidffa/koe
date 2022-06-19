@@ -8,7 +8,7 @@ import moe.kyokobot.koe.codec.OpusCodec;
 import moe.kyokobot.koe.gateway.MediaGatewayConnection;
 import moe.kyokobot.koe.handler.AudioReceiveHandler;
 import moe.kyokobot.koe.handler.ConnectionHandler;
-import moe.kyokobot.koe.internal.handler.AudioReceiver;
+import moe.kyokobot.koe.internal.handler.AudioReceiverHandler;
 import moe.kyokobot.koe.internal.handler.DiscordUDPConnection;
 import moe.kyokobot.koe.media.MediaFrameProvider;
 import org.jetbrains.annotations.NotNull;
@@ -165,13 +165,15 @@ public class MediaConnectionImpl implements MediaConnection {
     @Override
     public void setReceiveHandler(AudioReceiveHandler receiveHandler) {
         if (receiveHandler == null) {
+            logger.debug("Removing AudioReceiver listener");
             this.receiveHandler = null;
-            this.connectionHandler.getChannel().pipeline().remove(AudioReceiver.class);
+            this.connectionHandler.getChannel().pipeline().remove(AudioReceiverHandler.class);
             return;
         }
 
         if (this.receiveHandler == null && this.connectionHandler != null && this.connectionHandler.getChannel() != null) {
-            this.connectionHandler.getChannel().pipeline().addLast(new AudioReceiver((DiscordUDPConnection) this.connectionHandler, this));
+            logger.debug("Registering AudioReceiver listener");
+            this.connectionHandler.getChannel().pipeline().addLast(new AudioReceiverHandler((DiscordUDPConnection) this.connectionHandler, this));
         }
 
         this.receiveHandler = receiveHandler;

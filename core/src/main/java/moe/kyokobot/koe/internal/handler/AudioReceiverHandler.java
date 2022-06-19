@@ -6,12 +6,15 @@ import io.netty.channel.socket.DatagramPacket;
 import moe.kyokobot.koe.MediaConnection;
 import moe.kyokobot.koe.codec.OpusCodec;
 import moe.kyokobot.koe.internal.util.AudioPacket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class AudioReceiver extends SimpleChannelInboundHandler<DatagramPacket> {
+public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPacket> {
+  private static final Logger logger = LoggerFactory.getLogger(AudioReceiverHandler.class);
   private final DiscordUDPConnection udpConnection;
   private final MediaConnection connection;
 
-  public AudioReceiver(DiscordUDPConnection udpConnection, MediaConnection connection) {
+  public AudioReceiverHandler(DiscordUDPConnection udpConnection, MediaConnection connection) {
     this.connection = connection;
     this.udpConnection = udpConnection;
   }
@@ -28,6 +31,7 @@ public class AudioReceiver extends SimpleChannelInboundHandler<DatagramPacket> {
     );
 
     if (audio == null) {
+      logger.debug("Failed to decrypt received audio frame");
       return;
     }
 
