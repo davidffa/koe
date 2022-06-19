@@ -174,7 +174,8 @@ public class DiscordUDPConnection implements Closeable, ConnectionHandler<InetSo
             datagramChannel.pipeline().addFirst("handler", handler);
 
             if (udpConnection.connection.getReceiveHandler() != null) {
-                datagramChannel.pipeline().addLast(new AudioReceiver(udpConnection, udpConnection.connection));
+                logger.debug("Registering AudioReceiver listener");
+                datagramChannel.pipeline().addLast(new AudioReceiverHandler(udpConnection, udpConnection.connection));
             }
         }
     }
