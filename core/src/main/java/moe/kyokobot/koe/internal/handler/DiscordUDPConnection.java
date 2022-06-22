@@ -53,9 +53,9 @@ public class DiscordUDPConnection implements Closeable, ConnectionHandler<InetSo
             var supportsEpoll = Epoll.isAvailable();
 
             if (supportsEpoll) {
-                logger.warn("Could not get the UDP Socket file descriptor, audio receive system won't work. Enable Epoll, or disable jda-nas to be able to send and receive audio simultaneously.");
+                logger.warn("Could not get the UDP Socket file descriptor, audio receive system won't work. Enable Epoll, or disable NAS to be able to send and receive audio simultaneously.");
             } else {
-                logger.warn("Could not get the UDP Socket file descriptor, audio receive system won't work. Disable jda-nas to be able to send and receive audio simultaneously.");
+                logger.warn("Could not get the UDP Socket file descriptor, audio receive system won't work. Disable NAS to be able to send and receive audio simultaneously.");
             }
         }
 
