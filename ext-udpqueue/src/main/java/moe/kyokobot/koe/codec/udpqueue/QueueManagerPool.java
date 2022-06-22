@@ -65,8 +65,8 @@ public class QueueManagerPool {
             this.queueKey = queueKey;
         }
 
-        public boolean queuePacket(ByteBuffer packet, InetSocketAddress address) {
-            return this.manager.queuePacket(this.queueKey, packet, address);
+        public boolean queuePacketWithSocket(ByteBuffer packet, InetSocketAddress address, long socketFd) {
+            return this.manager.queuePacketWithSocket(this.queueKey, packet, address, socketFd);
         }
 
         public int getRemainingCapacity() {

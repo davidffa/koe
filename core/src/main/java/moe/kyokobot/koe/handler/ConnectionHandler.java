@@ -15,6 +15,7 @@ import java.util.concurrent.CompletionStage;
  * @param <R> type of the result returned if connection succeeds
  */
 public interface ConnectionHandler<R> {
+    long getSocketFileDescriptor();
     void close();
 
     void handleSessionDescription(JsonObject object);
