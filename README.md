@@ -28,6 +28,7 @@ dependencies {
 #### Features
 
 - Supports voice gateway v4 and v5.
+- Supports voice receiving (If using NAS, the audio receiving only works simultaneously with audio sending if using Epoll transport).
 - Easily extendable for stuff such as support for codecs other than Opus or video sending, if Discord ever decides to support it on bots.
 - Experimental video support.
 - Basic RTCP support for measuring packet loss and other stuff.
@@ -35,7 +36,6 @@ dependencies {
 #### Non-goals / won't do
 
 - Encoding - Koe only implements voice server communication, not voice handling itself, so it only accepts Opus frames and you have set up an encoder yourself, use [lavaplayer](https://github.com/sedmelluq/lavaplayer), libav/ffmpeg or anything else.
-- Voice receiving support - [it's not supported by Discord anyway](https://github.com/discordapp/discord-api-docs/issues/808#issuecomment-458863743), although someone could implement it by registering hooks.
 
 #### Extensions
 
