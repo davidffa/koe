@@ -20,7 +20,7 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
   }
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
-    if (this.udpConnection.getEncryptionMode() == null) return;
+    if (this.udpConnection.getEncryptionMode() == null || this.udpConnection.getSecretKey() == null) return;
 
     var buf = msg.content();
 
