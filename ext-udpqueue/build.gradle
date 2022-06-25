@@ -1,5 +1,5 @@
 dependencies {
     compileOnly project(':core')
     compileOnly group: 'org.jetbrains', name: 'annotations', version: '13.0'
-    implementation 'com.github.davidffa.jda-nas-fork:udp-queue:1.0.1'
+    implementation 'com.github.davidffa.jda-nas-fork:udp-queue:1.0.2'
 }
