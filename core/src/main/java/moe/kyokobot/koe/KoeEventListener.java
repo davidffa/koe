@@ -16,6 +16,8 @@ public interface KoeEventListener {
 
     void userDisconnected(String id);
 
+    void userSpeaking(String id, int ssrc, int speakingMask);
+
     void externalIPDiscovered(InetSocketAddress address);
 
     void sessionDescription(JsonObject session);

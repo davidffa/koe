@@ -63,6 +63,13 @@ public class EventDispatcher implements KoeEventListener {
     }
 
     @Override
+    public void userSpeaking(String id, int ssrc, int speakingMask) {
+        for (var listener : listeners) {
+            listener.userSpeaking(id, ssrc, speakingMask);
+        }
+    }
+
+    @Override
     public void externalIPDiscovered(InetSocketAddress address) {
         for (var listener : listeners) {
             listener.externalIPDiscovered(address);
