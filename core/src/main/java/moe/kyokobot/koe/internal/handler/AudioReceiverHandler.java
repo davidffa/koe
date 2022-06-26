@@ -29,7 +29,7 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
     long ssrc = buf.getUnsignedInt(8);
     var usersToRecord = this.connection.getReceiveHandler().users();
 
-    if (usersToRecord != null && usersToRecord.contains(this.connection.getGatewayConnection().getSsrcMap().get(ssrc)))
+    if (usersToRecord != null && !usersToRecord.contains(this.connection.getGatewayConnection().getSsrcMap().get(ssrc)))
       return;
 
     AudioPacket audio = this.udpConnection.getEncryptionMode().open(
