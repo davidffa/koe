@@ -112,6 +112,7 @@ public class MediaGatewayV5Connection extends AbstractMediaGatewayConnection {
                 int ssrc = data.getInt("ssrc");
                 String userId = data.getString("user_id");
 
+                ssrcMap.put((long) ssrc, userId);
                 connection.getDispatcher().userSpeaking(userId, ssrc, speakingMask);
             }
             case Op.HEARTBEAT_ACK: {
