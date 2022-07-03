@@ -69,7 +69,11 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
       return;
     }
 
-    usersSpeaking.add(userId);
+    if (!usersSpeaking.contains(userId)) {
+      usersSpeaking.add(userId);
+      connection.getDispatcher().userSpeakingStart(userId);
+    }
+
     connection.getReceiveHandler().handleAudio(audio);
   }
 
