@@ -113,7 +113,7 @@ public class MediaGatewayV5Connection extends AbstractMediaGatewayConnection {
                 String userId = data.getString("user_id");
 
                 ssrcMap.put((long) ssrc, userId);
-                connection.getDispatcher().userSpeaking(userId, ssrc, speakingMask);
+                connection.getDispatcher().userSpeakingStart(userId, ssrc, speakingMask);
             }
             case Op.HEARTBEAT_ACK: {
                 this.ping = System.currentTimeMillis() - this.lastHeartbeatSent;

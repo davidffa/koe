@@ -53,6 +53,8 @@ public interface MediaConnection extends Closeable {
 
     ConnectionHandler<?> getConnectionHandler();
 
+    KoeEventListener getDispatcher();
+
     void setAudioSender(@Nullable MediaFrameProvider sender);
 
     void setAudioCodec(@NotNull Codec audioCodec);

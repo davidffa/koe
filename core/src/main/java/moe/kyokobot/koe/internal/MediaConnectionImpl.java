@@ -280,6 +280,7 @@ public class MediaConnectionImpl implements MediaConnection {
         }
     }
 
+    @Override
     public EventDispatcher getDispatcher() {
         return dispatcher;
     }
