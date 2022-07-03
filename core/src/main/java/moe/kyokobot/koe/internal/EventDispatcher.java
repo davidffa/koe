@@ -63,9 +63,16 @@ public class EventDispatcher implements KoeEventListener {
     }
 
     @Override
-    public void userSpeaking(String id, int ssrc, int speakingMask) {
+    public void userSpeakingStart(String id, int ssrc, int speakingMask) {
         for (var listener : listeners) {
-            listener.userSpeaking(id, ssrc, speakingMask);
+            listener.userSpeakingStart(id, ssrc, speakingMask);
+        }
+    }
+
+    @Override
+    public void userSpeakingStop(String id) {
+        for (var listener : listeners) {
+            listener.userSpeakingStop(id);
         }
     }
 

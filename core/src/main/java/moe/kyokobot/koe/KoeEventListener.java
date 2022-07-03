@@ -16,7 +16,9 @@ public interface KoeEventListener {
 
     void userDisconnected(String id);
 
-    void userSpeaking(String id, int ssrc, int speakingMask);
+    void userSpeakingStart(String id, int ssrc, int speakingMask);
+
+    void userSpeakingStop(String id);
 
     void externalIPDiscovered(InetSocketAddress address);
 
