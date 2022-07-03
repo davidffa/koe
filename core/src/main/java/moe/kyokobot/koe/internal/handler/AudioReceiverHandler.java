@@ -31,7 +31,7 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
   }
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) {
-    if (udpConnection.getSecretKey() == null) return;
+    if (udpConnection.getSecretKey() == null || connection.getGatewayConnection() == null) return;
 
     var buf = msg.content();
     if (buf.getByte(1) != OpusCodec.PAYLOAD_TYPE) return;
@@ -40,6 +40,7 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
     String userId = connection.getGatewayConnection().getSsrcMap().get(ssrc);
     var usersToRecord = connection.getReceiveHandler().users();
 
+    if (userId == null) return;
     if (usersToRecord != null && !usersToRecord.contains(userId))
       return;
 
