@@ -6,6 +6,7 @@ import io.netty.channel.socket.DatagramPacket;
 import moe.kyokobot.koe.MediaConnection;
 import moe.kyokobot.koe.codec.OpusCodec;
 import moe.kyokobot.koe.internal.util.AudioPacket;
+import moe.kyokobot.koe.media.IntReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +20,7 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
   private final DiscordUDPConnection udpConnection;
   private final MediaConnection connection;
 
-  private final Map<String, Short> silenceCount;
+  private final Map<String, IntReference> silenceCount;
   private final Set<String> usersSpeaking;
 
   public AudioReceiverHandler(DiscordUDPConnection udpConnection, MediaConnection connection) {
@@ -57,9 +58,10 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
 
     if (opus.get(0) == (byte)0xF8 && opus.get(1) == (byte)0xFF && opus.get(2) == (byte)0xFE) {
       if (!usersSpeaking.contains(userId)) return;
-      short userSilenceCount = silenceCount.getOrDefault(userId, (short) 0);
+      var userSilenceCount = getUserSilenceCount(userId);
+      userSilenceCount.add(1);
 
-      if (++userSilenceCount == 5) {
+      if (userSilenceCount.get() == 5) {
         usersSpeaking.remove(userId);
         silenceCount.remove(userId);
         connection.getDispatcher().userSpeakingStop(userId);
@@ -69,5 +71,9 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
 
     usersSpeaking.add(userId);
     connection.getReceiveHandler().handleAudio(audio);
+  }
+
+  private IntReference getUserSilenceCount(String userId) {
+    return silenceCount.computeIfAbsent(userId, id -> new IntReference());
   }
 }
