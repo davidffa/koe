@@ -56,7 +56,9 @@ public class XSalsa20Poly1305SuffixEncryptionMode implements EncryptionMode {
         }
 
         byte flags = packet.readByte();
-        packet.readerIndex(8); // Skip unused RTP Header params
+        packet.readerIndex(2); // Skip payload_type
+        int seq = packet.readUnsignedShort();
+        long timestamp = packet.readUnsignedInt();
         long ssrc = packet.readUnsignedInt();
 
         int len = packet.readableBytes() - 24;
@@ -65,7 +67,7 @@ public class XSalsa20Poly1305SuffixEncryptionMode implements EncryptionMode {
         packet.readBytes(openNonce, 0, 24);
 
         if (0 == nacl.cryptoSecretboxXSalsa20Poly1305Open(m2, c2, len + 16, openNonce, secretKey)) {
-            return new AudioPacket(m2, len + 16, flags, ssrc, useDirectBuffer);
+            return new AudioPacket(m2, len + 16, flags, seq, timestamp, ssrc, useDirectBuffer);
         }
 
         return null;

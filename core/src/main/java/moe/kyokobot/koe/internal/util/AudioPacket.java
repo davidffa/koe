@@ -6,11 +6,15 @@ import java.nio.ByteOrder;
 public class AudioPacket {
   private ByteBuffer opus;
   private final byte flags;
+  private final int seq;
+  private final long timestamp;
   private final long ssrc;
   private final long receivedTimestamp;
 
-  public AudioPacket(byte[] message, int len, byte flags, long ssrc, boolean useDirectBuffer) {
+  public AudioPacket(byte[] message, int len, byte flags, int seq, long timestamp, long ssrc, boolean useDirectBuffer) {
     this.flags = flags;
+    this.seq = seq;
+    this.timestamp = timestamp;
     this.ssrc = ssrc;
     this.receivedTimestamp = System.currentTimeMillis();
 
@@ -46,6 +50,18 @@ public class AudioPacket {
 
   public ByteBuffer getOpusAudio() {
     return opus;
+  }
+
+  public byte getFlags() {
+    return flags;
+  }
+
+  public int getSeq() {
+    return seq;
+  }
+
+  public long getTimestamp() {
+    return timestamp;
   }
 
   public long getSsrc() {
