@@ -1,10 +1,9 @@
-ext.nettyVersion = '4.1.78.Final'
+ext.nettyVersion = '4.1.79.Final'
 
 dependencies {
     compile group: 'io.netty', name: 'netty-transport', version: nettyVersion
     compile group: 'io.netty', name: 'netty-codec-http', version: nettyVersion
-    compile group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: 'linux-aarch_64'
-    compile group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: 'linux-x86_64'
+    compile group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta4'
     compileOnly group: 'org.jetbrains', name: 'annotations', version: '13.0'
 }
