@@ -51,6 +51,8 @@ public class XSalsa20Poly1305EncryptionMode implements EncryptionMode {
         }
 
         byte flags = packet.getByte(0);
+        int seq = packet.getUnsignedShort(2);
+        long timestamp = packet.getUnsignedInt(4);
         long ssrc = packet.getUnsignedInt(8);
 
         packet.readBytes(openNonce, 0, 12);
@@ -59,7 +61,7 @@ public class XSalsa20Poly1305EncryptionMode implements EncryptionMode {
         packet.readBytes(c2, 16, len);
 
         if (0 == nacl.cryptoSecretboxXSalsa20Poly1305Open(m2, c2, len + 16, openNonce, secretKey)) {
-            return new AudioPacket(m2, len + 16, flags, ssrc, useDirectBuffer);
+            return new AudioPacket(m2, len + 16, flags, seq, timestamp, ssrc, useDirectBuffer);
         }
 
         return null;

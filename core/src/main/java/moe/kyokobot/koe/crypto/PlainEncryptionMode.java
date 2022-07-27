@@ -14,14 +14,16 @@ public class PlainEncryptionMode implements EncryptionMode {
     @Override
     public AudioPacket open(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
         byte flags = packet.readByte();
-        packet.readerIndex(8);
+        packet.readerIndex(2);
+        int seq = packet.readUnsignedShort();
+        long timestamp = packet.readUnsignedInt();
         long ssrc = packet.readUnsignedInt();
 
         int len = packet.readableBytes();
         byte[] output = new byte[len];
         packet.readBytes(output, 0, len);
 
-        return new AudioPacket(output, len, flags, ssrc, useDirectBuffer);
+        return new AudioPacket(output, len, flags, seq, timestamp, ssrc, useDirectBuffer);
     }
 
     @Override
