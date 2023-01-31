@@ -122,7 +122,6 @@ public class DiscordUDPConnection implements Closeable, ConnectionHandler<InetSo
         }
 
         connection.startAudioFramePolling();
-        connection.startVideoFramePolling();
     }
 
     @Override

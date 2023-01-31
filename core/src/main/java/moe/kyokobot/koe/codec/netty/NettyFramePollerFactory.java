@@ -14,7 +14,6 @@ public class NettyFramePollerFactory implements FramePollerFactory {
     public NettyFramePollerFactory() {
         codecMap = new HashMap<>();
         codecMap.put(OpusCodec.INSTANCE, NettyOpusFramePoller::new);
-        codecMap.put(H264Codec.INSTANCE, NettyH264FramePoller::new);
     }
 
     @Override

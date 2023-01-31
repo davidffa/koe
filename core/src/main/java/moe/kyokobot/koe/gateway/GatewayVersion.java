@@ -4,9 +4,7 @@ import moe.kyokobot.koe.VoiceServerInfo;
 import moe.kyokobot.koe.internal.MediaConnectionImpl;
 
 public enum GatewayVersion {
-    V4(MediaGatewayV4Connection::new),
-    V5(MediaGatewayV5Connection::new);
-
+    V4(MediaGatewayV4Connection::new);
     private final MediaGatewayConnectionFactory factory;
 
     public MediaGatewayConnection createConnection(MediaConnectionImpl connection, VoiceServerInfo voiceServerInfo) {
