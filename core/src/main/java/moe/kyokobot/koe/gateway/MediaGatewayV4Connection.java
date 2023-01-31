@@ -21,12 +21,6 @@ import java.util.stream.Collectors;
 
 public class MediaGatewayV4Connection extends AbstractMediaGatewayConnection {
     private static final Logger logger = LoggerFactory.getLogger(MediaGatewayV4Connection.class);
-    private static final JsonArray SUPPORTED_CODECS;
-
-    static {
-        SUPPORTED_CODECS = new JsonArray();
-        SUPPORTED_CODECS.add(OpusCodec.INSTANCE.getJsonDescription());
-    }
 
     private int ssrc;
     private SocketAddress address;
@@ -208,15 +202,8 @@ public class MediaGatewayV4Connection extends AbstractMediaGatewayConnection {
 
                 sendInternalPayload(Op.SELECT_PROTOCOL, new JsonObject()
                         .add("protocol", "udp")
-                        .add("codecs", SUPPORTED_CODECS)
-                        .add("rtc_connection_id", rtcConnectionId.toString())
                         .add("data", udpInfo)
                         .combine(udpInfo));
-
-                sendInternalPayload(Op.CLIENT_CONNECT, new JsonObject()
-                        .add("audio_ssrc", ssrc)
-                        .add("video_ssrc", 0)
-                        .add("rtx_ssrc", 0));
             });
 
             connection.setConnectionHandler(conn);
