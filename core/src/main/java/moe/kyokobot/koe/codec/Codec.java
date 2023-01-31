@@ -1,6 +1,5 @@
 package moe.kyokobot.koe.codec;
 
-import moe.kyokobot.koe.internal.json.JsonObject;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -8,24 +7,12 @@ import java.util.Objects;
 public abstract class Codec {
     protected final String name;
     protected final byte payloadType;
-    protected final byte rtxPayloadType;
     protected final int priority;
-    protected final JsonObject jsonDescription;
 
     protected Codec(String name, byte payloadType, int priority) {
-        this(name, payloadType, (byte) 0, priority);
-    }
-
-    protected Codec(String name, byte payloadType, byte rtxPayloadType, int priority) {
         this.name = name;
         this.payloadType = payloadType;
-        this.rtxPayloadType = rtxPayloadType;
         this.priority = priority;
-
-        this.jsonDescription = new JsonObject()
-                .add("name", name)
-                .add("payload_type", payloadType)
-                .add("priority", priority);
     }
 
     public String getName() {
@@ -36,16 +23,8 @@ public abstract class Codec {
         return payloadType;
     }
 
-    public byte getRetransmissionPayloadType() {
-        return rtxPayloadType;
-    }
-
     public int getPriority() {
         return priority;
-    }
-
-    public JsonObject getJsonDescription() {
-        return jsonDescription;
     }
 
     @Override

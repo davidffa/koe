@@ -1,11 +1,9 @@
 package moe.kyokobot.koe.gateway;
 
 import moe.kyokobot.koe.VoiceServerInfo;
-import moe.kyokobot.koe.codec.OpusCodec;
 import moe.kyokobot.koe.crypto.EncryptionMode;
 import moe.kyokobot.koe.internal.MediaConnectionImpl;
 import moe.kyokobot.koe.internal.handler.DiscordUDPConnection;
-import moe.kyokobot.koe.internal.json.JsonArray;
 import moe.kyokobot.koe.internal.json.JsonObject;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -14,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -25,7 +22,6 @@ public class MediaGatewayV4Connection extends AbstractMediaGatewayConnection {
     private int ssrc;
     private SocketAddress address;
     private List<String> encryptionModes;
-    private UUID rtcConnectionId;
     private ScheduledFuture<?> heartbeatFuture;
 
     private long lastHeartbeatSent;
@@ -98,8 +94,7 @@ public class MediaGatewayV4Connection extends AbstractMediaGatewayConnection {
                 logger.debug("Got session description: {}", data);
 
                 if (connection.getConnectionHandler() == null) {
-                    logger.warn("Received session description before protocol selection? (connection id = {})",
-                            this.rtcConnectionId);
+                    logger.warn("Received session description before protocol selection?");
                     break;
                 }
 
@@ -184,9 +179,6 @@ public class MediaGatewayV4Connection extends AbstractMediaGatewayConnection {
     private void selectProtocol(String protocol) {
         var mode = EncryptionMode.select(encryptionModes);
         logger.debug("Selected preferred encryption mode: {}", mode);
-
-        rtcConnectionId = UUID.randomUUID();
-        logger.debug("Generated new connection id: {}", rtcConnectionId);
 
         // known values: ["udp", "webrtc"]
         if (protocol.equals("udp")) {
