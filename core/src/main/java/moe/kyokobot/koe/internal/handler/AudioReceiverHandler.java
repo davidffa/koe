@@ -57,7 +57,7 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
 
     var opus = audio.getOpusAudio();
 
-    if (opus.get(0) == (byte)0xF8 && opus.get(1) == (byte)0xFF && opus.get(2) == (byte)0xFE) {
+    if (opus.remaining() >= 3 && opus.get(0) == (byte)0xF8 && opus.get(1) == (byte)0xFF && opus.get(2) == (byte)0xFE) {
       if (!usersSpeaking.contains(userId)) return;
       var userSilenceCount = getUserSilenceCount(userId);
       userSilenceCount.add(1);
