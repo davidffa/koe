@@ -67,6 +67,8 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
         silenceCount.remove(userId);
         connection.getDispatcher().userSpeakingStop(userId);
       }
+
+      connection.getReceiveHandler().handleAudio(audio);
       return;
     }
 
