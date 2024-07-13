@@ -59,7 +59,7 @@ public class DiscordUDPConnection implements Closeable, ConnectionHandler<InetSo
             }
         }
 
-        // SOCKET_INVALID (https://github.com/davidffa/jda-nas-fork/blob/master/udp-queue-natives/udpqueue/udpqueue.c#L26)
+        // SOCKET_INVALID (https://github.com/sedmelluq/jda-nas/blob/master/udp-queue-natives/udpqueue/udpqueue.c#L26)
         return -1;
     }
 
