@@ -12,6 +12,8 @@ class DefaultEncryptionModes {
 
     static {
         encryptionModes = Map.of( // sorted by priority
+                "aead_aes256_gcm_rtpsize", AES256GCMEncryptionMode::new,
+                //"aead_xchacha20_poly1305_rtpsize", XChaCha20Poly1305EncryptionMode::new,
                 "xsalsa20_poly1305_lite", XSalsa20Poly1305LiteEncryptionMode::new,
                 "xsalsa20_poly1305_suffix", XSalsa20Poly1305SuffixEncryptionMode::new,
                 "xsalsa20_poly1305", XSalsa20Poly1305EncryptionMode::new,
