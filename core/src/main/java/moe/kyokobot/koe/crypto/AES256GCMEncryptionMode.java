@@ -1,6 +1,7 @@
 package moe.kyokobot.koe.crypto;
 
 import io.netty.buffer.ByteBuf;
+import moe.kyokobot.koe.codec.OpusCodec;
 import moe.kyokobot.koe.internal.util.AudioPacket;
 
 import javax.crypto.Cipher;
@@ -13,9 +14,15 @@ public class AES256GCMEncryptionMode implements EncryptionMode {
     private static final int GCM_TAG_LENGTH = 16;
 
     private final byte[] extendedNonce = new byte[12];
-    private final byte[] m = new byte[1276];
-    private final byte[] c = new byte[1276 + GCM_TAG_LENGTH];
+    private final byte[] m = new byte[OpusCodec.MAX_FRAME_SIZE];
+    private final byte[] c = new byte[OpusCodec.MAX_FRAME_SIZE + GCM_TAG_LENGTH];
     private final byte[] rtpHeader = new byte[12];
+
+    private final byte[] decryptNonce = new byte[12];
+    private final byte[] m2 = new byte[OpusCodec.MAX_FRAME_SIZE];
+    private final byte[] c2 = new byte[OpusCodec.MAX_FRAME_SIZE + GCM_TAG_LENGTH];
+    private final byte[] receivedRtpHeader = new byte[12];
+
     private int seq = 0x80000000;
 
     private final Cipher cipher;
@@ -66,7 +73,32 @@ public class AES256GCMEncryptionMode implements EncryptionMode {
 
     @Override
     public AudioPacket decrypt(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
-        return null;
+        packet.readBytes(receivedRtpHeader);
+        packet.resetReaderIndex();
+
+        byte flags = packet.readByte();
+        packet.readerIndex(2); // Skip payload_type
+        int seq = packet.readUnsignedShort();
+        long timestamp = packet.readUnsignedInt();
+        long ssrc = packet.readUnsignedInt();
+
+        int len = packet.readableBytes() - 4;
+        packet.readBytes(c2, 0, len);
+
+        packet.readBytes(decryptNonce, 0, 4);
+
+        GCMParameterSpec spec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, decryptNonce);
+        SecretKeySpec keySpec = new SecretKeySpec(secretKey, "AES");
+
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, spec);
+            cipher.updateAAD(receivedRtpHeader, 0, 12);
+            cipher.doFinal(c2, 0, len, m2, 0);
+        } catch (Exception e) {
+            return null;
+        }
+
+        return new AudioPacket(m2, len - GCM_TAG_LENGTH, flags, seq, timestamp, ssrc, useDirectBuffer);
     }
 
     @Override

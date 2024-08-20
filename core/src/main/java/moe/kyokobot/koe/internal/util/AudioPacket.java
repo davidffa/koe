@@ -22,7 +22,7 @@ public class AudioPacket {
   }
 
   private void extractOpus(byte[] msg, int len, boolean useDirectBuffer) {
-    int offset = 32; // crypto_secretbox_ZEROBYTES
+    int offset = 0;
 
     boolean hasExtension = (flags & 0b10000) != 0;
     byte cc = (byte) (flags & 0b1111);

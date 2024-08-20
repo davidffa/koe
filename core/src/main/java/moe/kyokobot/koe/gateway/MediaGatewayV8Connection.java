@@ -97,6 +97,17 @@ public class MediaGatewayV8Connection extends AbstractMediaGatewayConnection {
                 connection.getConnectionHandler().handleSessionDescription(data);
                 break;
             }
+            case Op.SPEAKING: {
+                var data = object.getObject("d");
+                logger.debug("User started speaking: {}", data);
+
+                int speakingMask = data.getInt("speaking");
+                int ssrc = data.getInt("ssrc");
+                String userId = data.getString("user_id");
+
+                ssrcMap.put((long) ssrc, userId);
+                connection.getDispatcher().userSpeaking(userId, ssrc, speakingMask);
+            }
             case Op.HEARTBEAT_ACK: {
                 this.ping = System.currentTimeMillis() - object.getObject("d").getInt("t");
                 break;

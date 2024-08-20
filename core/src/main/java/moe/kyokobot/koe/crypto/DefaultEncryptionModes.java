@@ -12,7 +12,7 @@ class DefaultEncryptionModes {
     static final Map<String, Supplier<EncryptionMode>> encryptionModes;
 
     static {
-        boolean aesSupported = Security.getAlgorithms("Cipher").contains("AES/GCM/NoPadding");
+        boolean aesSupported = Security.getAlgorithms("Cipher").contains("AES_256/GCM/NOPADDING");
 
         if (aesSupported) {
             encryptionModes = Map.of( // sorted by priority
