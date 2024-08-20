@@ -1,7 +1,7 @@
 ext.nettyVersion = '4.1.112.Final'
 
 dependencies {
-    implementation group: 'io.netty', name: 'netty-transport', version: nettyVersion
+    api group: 'io.netty', name: 'netty-transport', version: nettyVersion
     implementation group: 'io.netty', name: 'netty-codec-http', version: nettyVersion
     implementation group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: "linux-x86_64"
     implementation group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: "linux-aarch_64"

@@ -13,6 +13,8 @@ import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
 import io.netty.buffer.ByteBuf;
 import moe.kyokobot.koe.*;
+import moe.kyokobot.koe.handler.AudioReceiveHandler;
+import moe.kyokobot.koe.internal.util.AudioPacket;
 import moe.kyokobot.koe.media.OpusAudioFrameProvider;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -158,6 +160,32 @@ public class TestBot extends ListenerAdapter implements VoiceDispatchInterceptor
 
             resolve(event.getGuild(), event.getChannel().asTextChannel(), content.substring(6));
             return;
+        } else if (content.startsWith("!rec")) {
+            if (event.getMember() == null) return;
+            var voiceState = event.getMember().getVoiceState();
+            if (voiceState == null || voiceState.getChannel() == null) {
+                event.getChannel().sendMessage("You need to be in a voice channel!").queue();
+                return;
+            }
+
+            var channel = voiceState.getChannel();
+
+            if (!event.getGuild().getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT)) {
+                event.getChannel().sendMessage("I don't have permissions to join your voice channel!").queue();
+                return;
+            }
+
+            if (koeClient.getConnection(voiceState.getGuild().getIdLong()) == null) {
+                var conn = koeClient.createConnection(voiceState.getGuild().getIdLong());
+                conn.setReceiveHandler(new AudioReceiver());
+                conn.registerListener(new ExampleListener());
+                connect(channel);
+                event.getChannel().sendMessage("Joined channel `" + channel.getName() + "`!").queue();
+            } else {
+                var conn = koeClient.getConnection(voiceState.getGuild().getIdLong());
+                conn.close();
+            }
+            return;
         }
 
         if (content.startsWith("!gcpress")) {
@@ -220,6 +248,14 @@ public class TestBot extends ListenerAdapter implements VoiceDispatchInterceptor
         @Override
         public void retrieveOpusFrame(ByteBuf targetBuffer) {
             targetBuffer.writeBytes(frameBuffer.array(), 0, frame.getDataLength());
+        }
+    }
+
+    private static class AudioReceiver implements AudioReceiveHandler {
+
+        @Override
+        public void handleAudio(AudioPacket packet) {
+            logger.debug("Received audio packet with size: {}", packet.getOpusAudio().remaining());
         }
     }
 

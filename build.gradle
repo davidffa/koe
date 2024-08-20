@@ -8,10 +8,10 @@ subprojects {
     targetCompatibility = 11
 
     repositories {
+        mavenCentral()
         mavenLocal()
 
-        maven { url "https://jcenter.bintray.com/" }
-        maven { url "https://repo.maven.apache.org/maven2" }
+        maven { url "https://maven.lavalink.dev/releases" }
         maven { url "https://jitpack.io/" }
     }
 }
