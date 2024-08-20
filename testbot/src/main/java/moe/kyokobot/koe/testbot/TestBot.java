@@ -1,5 +1,6 @@
 package moe.kyokobot.koe.testbot;
 
+import com.sedmelluq.discord.lavaplayer.natives.opus.OpusDecoder;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -13,6 +14,7 @@ import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
 import dev.lavalink.youtube.YoutubeAudioSourceManager;
 import io.netty.buffer.ByteBuf;
 import moe.kyokobot.koe.*;
+import moe.kyokobot.koe.codec.OpusCodec;
 import moe.kyokobot.koe.handler.AudioReceiveHandler;
 import moe.kyokobot.koe.internal.util.AudioPacket;
 import moe.kyokobot.koe.media.OpusAudioFrameProvider;
@@ -32,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -252,10 +255,24 @@ public class TestBot extends ListenerAdapter implements VoiceDispatchInterceptor
     }
 
     private static class AudioReceiver implements AudioReceiveHandler {
+        private final Map<Long, OpusDecoder> decoders = new HashMap<>();
 
         @Override
         public void handleAudio(AudioPacket packet) {
             logger.debug("Received audio packet with size: {}", packet.getOpusAudio().remaining());
+
+            OpusDecoder decoder = decoders.computeIfAbsent(packet.getSsrc(), k -> new OpusDecoder(48000, 2));
+
+            ByteBuffer output = ByteBuffer.allocateDirect(OpusCodec.MAX_FRAME_SIZE * 2 * 2);
+
+            int ret = decoder.decode(packet.getOpusAudio(), output.asShortBuffer());
+
+            if (ret < 0) {
+                logger.error("Error decoding audio frame: errno: {}", ret);
+                return;
+            }
+
+            logger.debug("Decoded {} bytes", ret);
         }
     }
 
