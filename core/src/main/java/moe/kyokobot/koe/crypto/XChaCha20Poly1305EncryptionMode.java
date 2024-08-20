@@ -15,7 +15,6 @@ public class XChaCha20Poly1305EncryptionMode implements EncryptionMode {
     private final ByteBuffer c2 = ByteBuffer.allocate(1276 + Poly1305.MAC_TAG_SIZE_IN_BYTES);
 
     private final byte[] rtpHeader = new byte[12];
-    private final byte[] receivedRtpHeader = new byte[12];
     private int seq = 0x80000000;
 
     private InsecureNonceXChaCha20Poly1305 cipher;
@@ -25,9 +24,7 @@ public class XChaCha20Poly1305EncryptionMode implements EncryptionMode {
     public boolean encrypt(ByteBuf packet, int len, ByteBuf output, byte[] secretKey) {
         byte[] m = new byte[len];
 
-        for (int i = 0; i < len; i++) {
-            m[i] = packet.readByte();
-        }
+        packet.readBytes(m);
 
         int s = this.seq++;
         extendedNonce[0] = (byte) (s & 0xff);
@@ -58,14 +55,28 @@ public class XChaCha20Poly1305EncryptionMode implements EncryptionMode {
     @Override
     @SuppressWarnings("Duplicates")
     public AudioPacket decrypt(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
-        packet.readBytes(receivedRtpHeader);
-        packet.resetReaderIndex();
-
         byte flags = packet.readByte();
         packet.readerIndex(2); // Skip payload_type
         int seq = packet.readUnsignedShort();
         long timestamp = packet.readUnsignedInt();
         long ssrc = packet.readUnsignedInt();
+
+        boolean hasExtension = (flags & 0b10000) != 0;
+        int cc = flags & 0b1111;
+
+        int rtpHeaderLength = 12 + 4*cc;
+        int extensionLength = 0;
+
+        if (hasExtension) {
+            packet.readerIndex(packet.readerIndex() + 2);
+            extensionLength = packet.readByte() << 8 | packet.readByte();
+            rtpHeaderLength += 4;
+        }
+
+        byte[] receivedRtpHeader = new byte[rtpHeaderLength];
+
+        packet.resetReaderIndex();
+        packet.readBytes(receivedRtpHeader, 0, rtpHeaderLength);
 
         int len = packet.readableBytes() - 4;
 
@@ -87,7 +98,7 @@ public class XChaCha20Poly1305EncryptionMode implements EncryptionMode {
             return null;
         }
 
-        return new AudioPacket(m2, len - Poly1305.MAC_TAG_SIZE_IN_BYTES, flags, seq, timestamp, ssrc, useDirectBuffer);
+        return new AudioPacket(m2, len - Poly1305.MAC_TAG_SIZE_IN_BYTES, flags, seq, timestamp, ssrc, extensionLength, useDirectBuffer);
     }
 
     @Override

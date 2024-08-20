@@ -23,7 +23,7 @@ public class PlainEncryptionMode implements EncryptionMode {
         byte[] output = new byte[len];
         packet.readBytes(output, 0, len);
 
-        return new AudioPacket(output, len, flags, seq, timestamp, ssrc, useDirectBuffer);
+        return new AudioPacket(output, len, flags, seq, timestamp, ssrc, 0, useDirectBuffer);
     }
 
     @Override

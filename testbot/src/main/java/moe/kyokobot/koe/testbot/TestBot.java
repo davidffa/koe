@@ -259,8 +259,6 @@ public class TestBot extends ListenerAdapter implements VoiceDispatchInterceptor
 
         @Override
         public void handleAudio(AudioPacket packet) {
-            logger.debug("Received audio packet with size: {}", packet.getOpusAudio().remaining());
-
             OpusDecoder decoder = decoders.computeIfAbsent(packet.getSsrc(), k -> new OpusDecoder(48000, 2));
 
             ByteBuffer output = ByteBuffer.allocateDirect(OpusCodec.MAX_FRAME_SIZE * 2 * 2);
@@ -269,10 +267,7 @@ public class TestBot extends ListenerAdapter implements VoiceDispatchInterceptor
 
             if (ret < 0) {
                 logger.error("Error decoding audio frame: errno: {}", ret);
-                return;
             }
-
-            logger.debug("Decoded {} bytes", ret);
         }
     }
 

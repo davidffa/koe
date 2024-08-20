@@ -21,7 +21,7 @@ public class AES256GCMEncryptionMode implements EncryptionMode {
     private final byte[] decryptNonce = new byte[12];
     private final byte[] m2 = new byte[OpusCodec.MAX_FRAME_SIZE];
     private final byte[] c2 = new byte[OpusCodec.MAX_FRAME_SIZE + GCM_TAG_LENGTH];
-    private final byte[] receivedRtpHeader = new byte[12];
+    private final byte[] receivedRtpHeader = new byte[12 + 15*4 + 4]; // max 15 ccrc + 4 bytes for header extension
 
     private int seq = 0x80000000;
 
@@ -72,15 +72,28 @@ public class AES256GCMEncryptionMode implements EncryptionMode {
     }
 
     @Override
+    @SuppressWarnings("Duplicates")
     public AudioPacket decrypt(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
-        packet.readBytes(receivedRtpHeader);
-        packet.resetReaderIndex();
-
         byte flags = packet.readByte();
         packet.readerIndex(2); // Skip payload_type
         int seq = packet.readUnsignedShort();
         long timestamp = packet.readUnsignedInt();
         long ssrc = packet.readUnsignedInt();
+
+        boolean hasExtension = (flags & 0b10000) != 0;
+        int cc = flags & 0b1111;
+
+        int rtpHeaderLength = 12 + 4*cc;
+        int extensionLength = 0;
+
+        if (hasExtension) {
+            packet.readerIndex(packet.readerIndex() + 2);
+            extensionLength = packet.readByte() << 8 | packet.readByte();
+            rtpHeaderLength += 4;
+        }
+
+        packet.resetReaderIndex();
+        packet.readBytes(receivedRtpHeader, 0, rtpHeaderLength);
 
         int len = packet.readableBytes() - 4;
         packet.readBytes(c2, 0, len);
@@ -92,13 +105,13 @@ public class AES256GCMEncryptionMode implements EncryptionMode {
 
         try {
             cipher.init(Cipher.DECRYPT_MODE, keySpec, spec);
-            cipher.updateAAD(receivedRtpHeader, 0, 12);
+            cipher.updateAAD(receivedRtpHeader, 0, rtpHeaderLength);
             cipher.doFinal(c2, 0, len, m2, 0);
         } catch (Exception e) {
             return null;
         }
 
-        return new AudioPacket(m2, len - GCM_TAG_LENGTH, flags, seq, timestamp, ssrc, useDirectBuffer);
+        return new AudioPacket(m2, len - GCM_TAG_LENGTH, flags, seq, timestamp, ssrc, extensionLength, useDirectBuffer);
     }
 
     @Override
