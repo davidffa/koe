@@ -1,11 +1,11 @@
-ext.nettyVersion = '4.1.87.Final'
+ext.nettyVersion = '4.1.112.Final'
 
 dependencies {
-    compile group: 'io.netty', name: 'netty-transport', version: nettyVersion
-    compile group: 'io.netty', name: 'netty-codec-http', version: nettyVersion
-    compile group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: "linux-x86_64"
-    compile group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: "linux-aarch_64"
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta4'
-    compile group: 'com.google.crypto.tink', name: 'tink', version: '1.14.1'
+    implementation group: 'io.netty', name: 'netty-transport', version: nettyVersion
+    implementation group: 'io.netty', name: 'netty-codec-http', version: nettyVersion
+    implementation group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: "linux-x86_64"
+    implementation group: 'io.netty', name: 'netty-transport-native-epoll', version: nettyVersion, classifier: "linux-aarch_64"
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta4'
+    implementation group: 'com.google.crypto.tink', name: 'tink', version: '1.14.1'
     compileOnly group: 'org.jetbrains', name: 'annotations', version: '13.0'
 }

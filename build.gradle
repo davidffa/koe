@@ -1,6 +1,5 @@
 subprojects {
-    apply plugin: 'maven'
-    apply plugin: 'java'
+    apply plugin: 'java-library'
 
     group = 'moe.kyokobot'
     version = '2.0.0-SNAPSHOT'
