@@ -140,7 +140,7 @@ public class DiscordUDPConnection implements Closeable, ConnectionHandler<InetSo
         var buf = allocator.buffer();
         buf.clear();
         RTPHeaderWriter.writeV2(buf, payloadType, nextSeq(), timestamp, ssrc, extension);
-        if (encryptionMode.box(data, len, buf, secretKey)) {
+        if (encryptionMode.encrypt(data, len, buf, secretKey)) {
             return buf;
         } else {
             logger.debug("Encryption failed!");

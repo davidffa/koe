@@ -1,11 +1,9 @@
 package moe.kyokobot.koe.gateway;
 
 import moe.kyokobot.koe.VoiceServerInfo;
-import moe.kyokobot.koe.codec.OpusCodec;
 import moe.kyokobot.koe.crypto.EncryptionMode;
 import moe.kyokobot.koe.internal.MediaConnectionImpl;
 import moe.kyokobot.koe.internal.handler.DiscordUDPConnection;
-import moe.kyokobot.koe.internal.json.JsonArray;
 import moe.kyokobot.koe.internal.json.JsonObject;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -14,28 +12,19 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MediaGatewayV8Connection extends AbstractMediaGatewayConnection {
     private static final Logger logger = LoggerFactory.getLogger(MediaGatewayV8Connection.class);
-    private static final JsonArray SUPPORTED_CODECS;
-
-    static {
-        SUPPORTED_CODECS = new JsonArray();
-        SUPPORTED_CODECS.add(OpusCodec.INSTANCE.getJsonDescription());
-    }
 
     private int ssrc;
     private SocketAddress address;
     private List<String> encryptionModes;
-    private UUID rtcConnectionId;
     private ScheduledFuture<?> heartbeatFuture;
     private int seq = -1;
 
-    private long lastHeartbeatSent;
     private long ping;
 
     public MediaGatewayV8Connection(MediaConnectionImpl connection, VoiceServerInfo voiceServerInfo) {
@@ -96,12 +85,11 @@ public class MediaGatewayV8Connection extends AbstractMediaGatewayConnection {
             }
             case Op.SESSION_DESCRIPTION: {
                 var data = object.getObject("d");
-                connectAttempt = 0;
+                reconnectAttempts = 0;
                 logger.debug("Got session description: {}", data);
 
                 if (connection.getConnectionHandler() == null) {
-                    logger.warn("Received session description before protocol selection? (connection id = {})",
-                            this.rtcConnectionId);
+                    logger.warn("Received session description before protocol selection?");
                     break;
                 }
 
@@ -110,11 +98,11 @@ public class MediaGatewayV8Connection extends AbstractMediaGatewayConnection {
                 break;
             }
             case Op.HEARTBEAT_ACK: {
-                this.ping = System.currentTimeMillis() - this.lastHeartbeatSent;
+                this.ping = System.currentTimeMillis() - object.getObject("d").getInt("t");
                 break;
             }
             case Op.RESUMED: {
-                connectAttempt = 0;
+                reconnectAttempts = 0;
 
                 logger.debug("Resumed successfully");
                 break;
@@ -168,7 +156,6 @@ public class MediaGatewayV8Connection extends AbstractMediaGatewayConnection {
     }
 
     private void heartbeat() {
-        this.lastHeartbeatSent = System.currentTimeMillis();
         sendInternalPayload(Op.HEARTBEAT, new JsonObject()
                 .add("t", System.currentTimeMillis())
                 .add("seq_ack", seq));
@@ -177,9 +164,6 @@ public class MediaGatewayV8Connection extends AbstractMediaGatewayConnection {
     private void selectProtocol(String protocol) {
         var mode = EncryptionMode.select(encryptionModes);
         logger.debug("Selected preferred encryption mode: {}", mode);
-
-        rtcConnectionId = UUID.randomUUID();
-        logger.debug("Generated new connection id: {}", rtcConnectionId);
 
         // known values: ["udp", "webrtc"]
         if (protocol.equals("udp")) {
@@ -195,15 +179,8 @@ public class MediaGatewayV8Connection extends AbstractMediaGatewayConnection {
 
                 sendInternalPayload(Op.SELECT_PROTOCOL, new JsonObject()
                         .add("protocol", "udp")
-                        .add("codecs", SUPPORTED_CODECS)
-                        .add("rtc_connection_id", rtcConnectionId.toString())
                         .add("data", udpInfo)
                         .combine(udpInfo));
-
-                sendInternalPayload(Op.CLIENT_CONNECT, new JsonObject()
-                        .add("audio_ssrc", ssrc)
-                        .add("video_ssrc", 0)
-                        .add("rtx_ssrc", 0));
             });
 
             connection.setConnectionHandler(conn);

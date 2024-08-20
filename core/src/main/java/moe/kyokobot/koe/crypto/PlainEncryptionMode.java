@@ -5,14 +5,14 @@ import moe.kyokobot.koe.internal.util.AudioPacket;
 
 public class PlainEncryptionMode implements EncryptionMode {
     @Override
-    public boolean box(ByteBuf opus, int start, ByteBuf output, byte[] secretKey) {
+    public boolean encrypt(ByteBuf opus, int start, ByteBuf output, byte[] secretKey) {
         opus.readerIndex(start);
         output.writeBytes(opus);
         return true;
     }
 
     @Override
-    public AudioPacket open(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
+    public AudioPacket decrypt(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
         byte flags = packet.readByte();
         packet.readerIndex(2);
         int seq = packet.readUnsignedShort();

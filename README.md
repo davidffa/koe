@@ -27,7 +27,7 @@ dependencies {
 
 #### Features
 
-- Supports voice gateway v4 and v5.
+- Supports voice gateway v8.
 - Supports voice receiving (If using NAS, the audio receiving only works simultaneously with audio sending if using Epoll transport).
 - Easily extendable for stuff such as support for codecs other than Opus or video sending, if Discord ever decides to support it on bots.
 - Experimental video support.
@@ -47,5 +47,4 @@ dependencies {
 
 Koe includes modified/stripped-down parts based on following open-source projects:
 
-- [tweetnacl-java](https://github.com/InstantWebP2P/tweetnacl-java) (Poly1305, SecretBox)
 - [nanojson](https://github.com/mmastrac/nanojson) (modified for bytebuf support, changed the API a bit and etc.)

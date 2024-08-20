@@ -44,7 +44,7 @@ public class AudioReceiverHandler extends SimpleChannelInboundHandler<DatagramPa
     if (usersToRecord != null && !usersToRecord.contains(userId))
       return;
 
-    AudioPacket audio = udpConnection.getEncryptionMode().open(
+    AudioPacket audio = udpConnection.getEncryptionMode().decrypt(
             buf,
             udpConnection.getSecretKey(),
             connection.getReceiveHandler().useDirectBuffer()

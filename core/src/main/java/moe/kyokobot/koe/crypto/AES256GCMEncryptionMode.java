@@ -1,6 +1,7 @@
 package moe.kyokobot.koe.crypto;
 
 import io.netty.buffer.ByteBuf;
+import moe.kyokobot.koe.internal.util.AudioPacket;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
@@ -29,7 +30,7 @@ public class AES256GCMEncryptionMode implements EncryptionMode {
 
     @Override
     @SuppressWarnings("Duplicates")
-    public boolean box(ByteBuf packet, int len, ByteBuf output, byte[] secretKey) {
+    public boolean encrypt(ByteBuf packet, int len, ByteBuf output, byte[] secretKey) {
         for (int i = 0; i < len; i++) {
             m[i] = packet.readByte();
         }
@@ -61,6 +62,11 @@ public class AES256GCMEncryptionMode implements EncryptionMode {
 
         output.writeIntLE(s);
         return true;
+    }
+
+    @Override
+    public AudioPacket decrypt(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
+        return null;
     }
 
     @Override
