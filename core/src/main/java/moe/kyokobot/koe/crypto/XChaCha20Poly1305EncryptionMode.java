@@ -9,9 +9,13 @@ import java.nio.ByteBuffer;
 
 public class XChaCha20Poly1305EncryptionMode implements EncryptionMode {
     private final byte[] extendedNonce = new byte[24];
+    private final byte[] decryptNonce = new byte[24];
+
     private final ByteBuffer c = ByteBuffer.allocate(1276 + Poly1305.MAC_TAG_SIZE_IN_BYTES);
+    private final ByteBuffer c2 = ByteBuffer.allocate(1276 + Poly1305.MAC_TAG_SIZE_IN_BYTES);
 
     private final byte[] rtpHeader = new byte[12];
+    private final byte[] receivedRtpHeader = new byte[12];
     private int seq = 0x80000000;
 
     private InsecureNonceXChaCha20Poly1305 cipher;
@@ -52,8 +56,38 @@ public class XChaCha20Poly1305EncryptionMode implements EncryptionMode {
     }
 
     @Override
+    @SuppressWarnings("Duplicates")
     public AudioPacket decrypt(ByteBuf packet, byte[] secretKey, boolean useDirectBuffer) {
-        return null;
+        packet.readBytes(receivedRtpHeader);
+        packet.resetReaderIndex();
+
+        byte flags = packet.readByte();
+        packet.readerIndex(2); // Skip payload_type
+        int seq = packet.readUnsignedShort();
+        long timestamp = packet.readUnsignedInt();
+        long ssrc = packet.readUnsignedInt();
+
+        int len = packet.readableBytes() - 4;
+
+        c2.position(0);
+        c2.limit(len);
+
+        packet.readBytes(c2);
+        packet.readBytes(decryptNonce, 0, 4);
+
+        byte[] m2;
+
+        try {
+            if (cipher == null)
+                cipher = new InsecureNonceXChaCha20Poly1305(secretKey);
+
+            c2.rewind();
+            m2 = cipher.decrypt(c2, decryptNonce, receivedRtpHeader);
+        } catch (Exception e) {
+            return null;
+        }
+
+        return new AudioPacket(m2, len - Poly1305.MAC_TAG_SIZE_IN_BYTES, flags, seq, timestamp, ssrc, useDirectBuffer);
     }
 
     @Override
